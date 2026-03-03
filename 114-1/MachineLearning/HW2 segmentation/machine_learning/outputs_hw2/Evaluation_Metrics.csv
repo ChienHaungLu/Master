@@ -1,0 +1,2 @@
+model\metric,Accuracy,Precision,Recall,F1 Score,Miou
+DeepLabV3+-SMP,0.912,0.836,0.839,0.837,0.731

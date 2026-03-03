@@ -1,0 +1,25 @@
+{"text":"In machine learning, backpropagation is a gradient computation method commonly used for training a neural network in computing parameter updates."}
+{"text":"It is an efficient application of the chain rule to neural networks."}
+{"text":"Backpropagation computes the gradient of a loss function with respect to the weights of the network for a single input–output example, and does so efficiently, computing the gradient one layer at a time, iterating backward from the last layer to avoid redundant calculations of intermediate terms in the chain rule; this can be derived through dynamic programming.[1][2][3]"}
+{"text":"Strictly speaking, the term backpropagation refers only to an algorithm for efficiently computing the gradient, not how the gradient is used; but the term is often used loosely to refer to the entire learning algorithm."}
+{"text":"This includes changing model parameters in the negative direction of the gradient, such as by stochastic gradient descent, or as an intermediate step in a more complicated optimizer, such as Adaptive Moment Estimation.[4]"}
+{"text":"Backpropagation had multiple discoveries and partial discoveries, with a tangled history and terminology."}
+{"text":"Backpropagation computes the gradient in weight space of a feedforward neural network, with respect to a loss function."}
+{"text":"In the derivation of backpropagation, other intermediate quantities are used by introducing them as needed below."}
+{"text":"Bias terms are not treated specially since they correspond to a weight with a fixed input of 1."}
+{"text":"For backpropagation the specific loss function and activation functions do not matter as long as they and their derivatives can be evaluated efficiently."}
+{"text":"Traditional activation functions include sigmoid, tanh, and ReLU. Swish,[6] mish,[7] and many others."}
+{"text":"Backpropagation can be expressed for simple feedforward networks in terms of matrix multiplication, or more generally in terms of the adjoint graph."}
+{"text":"For the basic case of a feedforward network, where nodes in each layer are connected only to nodes in the immediate next layer (without skipping any layers), and there is a loss function that computes a scalar loss for the final output, backpropagation can be understood simply by matrix multiplication.[c]"}
+{"text":"For backpropagation, the loss function calculates the difference between the network output and its expected output, after a training example has propagated through the network."}
+{"text":"The mathematical expression of the loss function must fulfill two conditions in order for it to be possibly used in backpropagation.[12]"}
+{"text":"The reason for this assumption is that the backpropagation algorithm calculates the gradient of the error function for a single training example, which needs to be generalized to the overall error function. "}
+{"text":"The second assumption is that it can be written as a function of the outputs from the neural network."}
+{"text":"Gradient descent with backpropagation is not guaranteed to find the global minimum of the error function, but only a local minimum; also, it has trouble crossing plateaus in the error function landscape."}
+{"text":"This issue, caused by the non-convexity of error functions in neural networks, was long thought to be a major drawback, but Yann LeCun et al. argue that in many practical problems, it is not.[13]"}
+{"text":"Backpropagation learning does not require normalization of input vectors; however, normalization could improve performance.[14]"}
+{"text":"Backpropagation requires the derivatives of activation functions to be known at network design time."}
+{"text":"Backpropagation had been derived repeatedly, as it is essentially an efficient application of the chain rule (first written down by Gottfried Wilhelm Leibniz in 1676)[15][16] to neural networks."}
+{"text":"In any case, he only studied neurons whose outputs were discrete levels, which only had zero derivatives, making backpropagation impossible."}
+{"text":"In 1982, Paul Werbos applied backpropagation to MLPs in the way that has become standard.[31][32] Werbos described how he developed backpropagation in an interview."}
+{"text":"In 2023, a backpropagation algorithm was implemented on a photonic processor by a team at Stanford University.[52]"}
