@@ -1,4 +1,4 @@
-# EFFICIENT AI MODEL DESIGN FOR MACHINE LEARNING AND INFERENCE
+# Efficient Ai Model Design For Machine Learning And Inference
 本課程主要聚焦在模型壓縮的部分,特別是Lab2-Lab6的作業更聚焦在本門課所著重之模型壓縮主題
 
 <br>
