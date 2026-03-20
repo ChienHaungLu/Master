@@ -1,0 +1,7 @@
+gradio==5.34.2
+gradio-client==1.10.3
+onnxruntime==1.17.0
+numpy==1.26.4
+pillow==10.4.0
+opencv-python-headless==4.10.0.84
+requests

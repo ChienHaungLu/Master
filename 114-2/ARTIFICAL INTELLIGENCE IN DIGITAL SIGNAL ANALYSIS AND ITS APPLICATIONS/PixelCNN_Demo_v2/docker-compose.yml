@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  face_gen:
+    container_name: PixelCNN_Demo_v2
+    build: face_gen
+    volumes:
+      - ../../code:/cod
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+    command: python main.py

@@ -1,0 +1,3 @@
+# PixelCNN_Demo_v2
+
+透過邊緣運算裝置Xavier進行PixcelCNN模型推論，並使用Docker建置映像檔(Image)及使用Container完成專案實作、部屬及成果展示
