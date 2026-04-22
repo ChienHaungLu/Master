@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 音樂工作室</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e12;
+      --surface: #16161d;
+      --surface2: #1e1e28;
+      --surface3: #252532;
+      --accent: #c8f04f;
+      --accent2: #7b5cf0;
+      --text: #f0ede6;
+      --muted: #7a7a8c;
+      --border: rgba(255,255,255,0.07);
+      --red: #e24b4a;
+      --teal: #5dcaa5;
+      --blue: #85b7eb;
+      --amber: #ef9f27;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .page-title {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .page-title h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+    .page-title p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 720px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 1.25rem 1.5rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-icon {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #fff;
+    }
+
+    .card-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+    .field-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    /* 情緒按鈕 */
+    .emotion-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .emotion-btn {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      transition: all 0.15s;
+      text-align: left;
+    }
+    .emotion-btn:hover { border-color: rgba(255,255,255,0.18); background: #22222e; }
+    .emotion-btn.active { border-color: var(--accent); background: rgba(200,240,79,0.06); }
+
+    .emotion-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .emotion-name { font-weight: 500; font-size: 12px; line-height: 1.2; }
+    .emotion-desc { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+    /* 輸入框 */
+    .text-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .text-input:focus { border-color: rgba(123,92,240,0.5); }
+    .text-input::placeholder { color: var(--muted); }
+
+    /* 提示詞預覽 */
+    .prompt-chip {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(123,92,240,0.1);
+      border: 1px solid rgba(123,92,240,0.25);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11px;
+      color: #a899f5;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* 滑桿 */
+    .duration-row { display: flex; align-items: center; gap: 12px; }
+    .slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--surface2);
+      outline: none;
+      cursor: pointer;
+      border: none;
+    }
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 0 4px rgba(200,240,79,0.15);
+    }
+    .duration-badge {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-family: 'Space Mono', monospace;
+      color: var(--accent);
+      min-width: 48px;
+      text-align: center;
+    }
+
+    /* 按鈕 */
+    .btn-primary {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      color: #0e0e12;
+      border: none;
+      border-radius: 11px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary:hover { background: #d9f55c; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled {
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 13px;
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--border);
+      border-radius: 11px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-secondary:hover { background: var(--surface2); border-color: rgba(255,255,255,0.15); }
+    .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* 上傳區 */
+    .upload-area {
+      display: block;
+      width: 100%;
+      border: 2px dashed var(--border);
+      border-radius: 11px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--surface2);
+      line-height: 1.4;
+    }
+    .upload-area:hover { border-color: rgba(255,255,255,0.2); background: var(--surface3); }
+    .upload-area.drag-over { border-color: var(--accent2); background: rgba(123,92,240,0.08); }
+    .upload-area input { display: none; }
+    .upload-icon { font-size: 28px; margin-bottom: 8px; }
+    .upload-text { font-size: 13px; color: var(--muted); line-height: 1.4; }
+    .upload-text strong { color: var(--text); font-weight: 500; }
+    .upload-filename {
+      font-size: 12px;
+      color: var(--accent2);
+      font-family: 'Space Mono', monospace;
+      margin-top: 8px;
+      word-break: break-all;
+    }
+
+    .record-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .record-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(226,75,74,0.08);
+      border: 1px solid rgba(226,75,74,0.22);
+      border-radius: 20px;
+      padding: 5px 11px;
+      font-size: 11px;
+      color: #f4b0b0;
+      width: fit-content;
+    }
+
+    .record-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    .recorded-card {
+      background: var(--surface2);
+      border: 1px solid rgba(123,92,240,0.25);
+      border-radius: 11px;
+      padding: 12px;
+    }
+
+    .recorded-card audio {
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    /* 狀態列 */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent2);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 錯誤 */
+    .error-bar {
+      background: rgba(226,75,74,0.08);
+      border: 1px solid rgba(226,75,74,0.2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #f09595;
+    }
+
+    /* 音訊播放 */
+    .result-card {
+      background: var(--surface2);
+      border: 1px solid rgba(200,240,79,0.18);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .result-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pulse-dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.6); }
+    }
+    audio { width: 100%; height: 34px; outline: none; border-radius: 6px; }
+
+    /* 情感分析結果 */
+    .emotion-result {
+      background: var(--surface2);
+      border: 1px solid rgba(123,92,240,0.2);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .emotion-result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .emotion-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .va-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .va-card {
+      background: var(--surface3);
+      border-radius: 9px;
+      padding: 10px 12px;
+    }
+    .va-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .va-value { font-size: 20px; font-family: 'Space Mono', monospace; font-weight: 700; }
+    .va-bar-bg { background: var(--border); border-radius: 2px; height: 3px; margin-top: 6px; overflow: hidden; }
+    .va-bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+
+    /* 四象限圖 */
+    .quadrant-wrap {
+      position: relative;
+      width: 100%;
+      padding-top: 100%;
+    }
+    .quadrant-inner {
+      position: absolute;
+      inset: 0;
+    }
+    .quadrant-svg { width: 100%; height: 100%; }
+
+    /* 標籤列表 */
+    .tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 9px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .tag-pill.highlight { background: rgba(123,92,240,0.1); border-color: rgba(123,92,240,0.25); color: #a899f5; }
+
+    /* wave 動畫 */
+    .wave-icon { display: flex; align-items: center; gap: 2px; }
+    .wave-icon span {
+      display: inline-block;
+      width: 3px;
+      background: #0e0e12;
+      border-radius: 2px;
+      animation: waveAnim 1s ease-in-out infinite;
+    }
+    .wave-icon span:nth-child(1) { height: 7px; animation-delay: 0s; }
+    .wave-icon span:nth-child(2) { height: 12px; animation-delay: 0.1s; }
+    .wave-icon span:nth-child(3) { height: 8px; animation-delay: 0.2s; }
+    .wave-icon span:nth-child(4) { height: 14px; animation-delay: 0.3s; }
+    .wave-icon span:nth-child(5) { height: 7px; animation-delay: 0.4s; }
+    @keyframes waveAnim {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.35); }
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="page-title">
+  <h1>♪ AI MUSIC STUDIO</h1>
+  <p>情緒驅動生成 · 音樂情感分析</p>
+</div>
+
+<div class="layout">
+
+  <!-- ══════════════════════════════════════
+       左欄：情感分析
+  ══════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:var(--accent2); color:#fff">◈</div>
+      <span class="card-title">EMOTION ANALYZER</span>
+    </div>
+    <div class="card-body">
+
+      <div>
+        <div class="field-label">上傳音樂檔案</div>
+        <label class="upload-area" id="uploadArea"
+               ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <input type="file" id="fileInput" accept="audio/*" onchange="handleFileSelect(event)">
+          <div class="upload-icon">♬</div>
+          <div class="upload-text"><strong>點擊選擇</strong>或拖曳音樂檔案</div>
+          <div class="upload-text" style="font-size:11px; margin-top:4px">支援 WAV · MP3</div>
+          <div class="upload-filename hidden" id="uploadFilename"></div>
+        </label>
+      </div>
+
+      <div>
+        <div class="field-label">或使用 webcam 麥克風錄音</div>
+        <div class="record-controls">
+          <button class="btn-secondary" id="startRecordBtn" onclick="startRecording()">開始錄音</button>
+          <button class="btn-secondary" id="stopRecordBtn" onclick="stopRecording()" disabled>停止錄音</button>
+        </div>
+        <div class="record-chip hidden" id="recordingChip" style="margin-top:8px">
+          <div class="record-dot"></div>
+          <span id="recordingTimer">錄音中 00:00</span>
+        </div>
+      </div>
+
+      <div class="recorded-card hidden" id="recordedCard">
+        <div class="field-label" style="margin-bottom:0">已錄製音訊</div>
+        <audio id="recordedPlayer" controls></audio>
+      </div>
+
+      <button class="btn-secondary" id="analyzeBtn" onclick="analyzeEmotion()" disabled>
+        <span id="analyzeBtnText">分析情感</span>
+      </button>
+
+      <div class="status-bar hidden" id="analyzeStatus">
+        <div class="spinner"></div>
+        <span id="analyzeStatusMsg">正在分析音樂情感...</span>
+      </div>
+      <div class="error-bar hidden" id="analyzeError"></div>
+
+      <!-- 結果區塊 -->
+      <div class="hidden" id="analyzeResult">
+
+        <!-- 情緒標籤 + VA 數值 -->
+        <div class="emotion-result">
+          <div class="emotion-result-header">
+            <div>
+              <div class="field-label" style="margin-bottom:6px">判定結果</div>
+              <div class="emotion-badge" id="emotionBadge"></div>
+            </div>
+          </div>
+
+          <div class="va-row">
+            <div class="va-card">
+              <div class="va-label">Valence（正負向）</div>
+              <div class="va-value" id="valenceVal">0.00</div>
+              <div class="va-bar-bg">
+                <div class="va-bar-fill" id="valenceBar" style="background:var(--teal); width:50%"></div>
+              </div>
+            </div>
+            <div class="va-card">
+              <div class="va-label">Arousal（能量感）</div>
+              <div class="va-value" id="arousalVal">0.00</div>
+              <div class="va-bar-bg">
+                <div class="va-bar-fill" id="arousalBar" style="background:var(--accent2); width:50%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 四象限圖 -->
+          <div class="field-label" style="margin-bottom:8px">情感座標</div>
+          <div class="quadrant-wrap">
+            <div class="quadrant-inner">
+              <svg class="quadrant-svg" id="quadrantSvg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <!-- 背景 -->
+                <rect x="0" y="0" width="100" height="100" rx="0" fill="rgba(200,240,79,0.04)"/>
+                <rect x="100" y="0" width="100" height="100" rx="0" fill="rgba(226,75,74,0.04)"/>
+                <rect x="0" y="100" width="100" height="100" rx="0" fill="rgba(133,183,235,0.04)"/>
+                <rect x="100" y="100" width="100" height="100" rx="0" fill="rgba(93,202,165,0.06)"/>
+                <!-- 格線 -->
+                <line x1="100" y1="0" x2="100" y2="200" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+                <line x1="0" y1="100" x2="200" y2="100" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+                <!-- 象限標籤 -->
+                <text x="50" y="14" text-anchor="middle" font-size="7" fill="rgba(226,75,74,0.7)" font-family="DM Sans, sans-serif">緊張/強烈</text>
+                <text x="150" y="14" text-anchor="middle" font-size="7" fill="rgba(200,240,79,0.7)" font-family="DM Sans, sans-serif">快樂/動感</text>
+                <text x="50" y="197" text-anchor="middle" font-size="7" fill="rgba(133,183,235,0.7)" font-family="DM Sans, sans-serif">悲傷/憂鬱</text>
+                <text x="150" y="197" text-anchor="middle" font-size="7" fill="rgba(93,202,165,0.7)" font-family="DM Sans, sans-serif">平靜/輕柔</text>
+                <!-- 軸標籤 -->
+                <text x="100" y="196" text-anchor="middle" font-size="6" fill="rgba(255,255,255,0.25)" font-family="Space Mono, monospace">Valence →</text>
+                <text x="8" y="100" text-anchor="middle" font-size="6" fill="rgba(255,255,255,0.25)" font-family="Space Mono, monospace" transform="rotate(-90 8 100)">Arousal ↑</text>
+                <!-- 點 -->
+                <circle id="quadrantDot" cx="100" cy="100" r="6" fill="var(--accent2)" opacity="0"/>
+                <circle id="quadrantDotOuter" cx="100" cy="100" r="10" fill="rgba(123,92,240,0.25)" opacity="0"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- 偵測到的標籤 -->
+          <div style="margin-top:12px">
+            <div class="field-label" style="margin-bottom:7px">偵測標籤 (前10)</div>
+            <div class="tags-wrap" id="tagsWrap"></div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       右欄：音樂生成
+  ══════════════════════════════════════ -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:var(--accent); color:#0e0e12">▶</div>
+      <span class="card-title">MUSIC GENERATOR</span>
+    </div>
+    <div class="card-body">
+
+      <div>
+        <div class="field-label">核心情緒</div>
+        <div class="emotion-grid" id="emotionGrid">
+          <button class="emotion-btn active" data-value="happy and excited" onclick="selectEmotion(this)">
+            <div class="emotion-dot" style="background:var(--accent)"></div>
+            <div><div class="emotion-name">高昂正向</div><div class="emotion-desc">Excited · Happy</div></div>
+          </button>
+          <button class="emotion-btn" data-value="calm and serene" onclick="selectEmotion(this)">
+            <div class="emotion-dot" style="background:var(--teal)"></div>
+            <div><div class="emotion-name">平靜正向</div><div class="emotion-desc">Calm · Serene</div></div>
+          </button>
+          <button class="emotion-btn" data-value="sad and melancholic" onclick="selectEmotion(this)">
+            <div class="emotion-dot" style="background:var(--blue)"></div>
+            <div><div class="emotion-name">低沉負向</div><div class="emotion-desc">Sad · Gloomy</div></div>
+          </button>
+          <button class="emotion-btn" data-value="angry and tense" onclick="selectEmotion(this)">
+            <div class="emotion-dot" style="background:var(--red)"></div>
+            <div><div class="emotion-name">激昂負向</div><div class="emotion-desc">Angry · Tense</div></div>
+          </button>
+          <button class="emotion-btn" data-value="" onclick="selectEmotion(this)" style="grid-column:span 2">
+            <div class="emotion-dot" style="background:var(--muted)"></div>
+            <div><div class="emotion-name">不指定情緒</div><div class="emotion-desc">純風格模式</div></div>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <div class="field-label">曲風與樂器（英文）</div>
+        <input class="text-input" type="text" id="styleInput" value="piano solo"
+               placeholder="e.g. 80s pop, cyberpunk synth, jazz quartet"
+               oninput="updatePreview()">
+      </div>
+
+      <div>
+        <div class="field-label">提示詞預覽</div>
+        <div class="prompt-chip">
+          <span style="color:var(--muted)">→</span>
+          <span id="promptText">happy and excited piano solo</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="field-label">生成長度</div>
+        <div class="duration-row">
+          <input class="slider" type="range" min="1" max="30" value="5" id="durationSlider"
+                 oninput="document.getElementById('durationBadge').textContent=this.value+'s'" step="1">
+          <div class="duration-badge" id="durationBadge">5s</div>
+        </div>
+      </div>
+      <div style="margin-top: 15px; margin-bottom: 20px;">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); cursor: pointer;">
+          <input type="checkbox" id="useAudioPrompt" style="cursor: pointer; accent-color: var(--accent);">
+          使用左側音訊作為旋律提示 (Music-to-Music)
+        </label>
+      </div>
+
+      <button class="btn-primary" id="generateBtn" onclick="generateMusic()">
+        <div class="wave-icon hidden" id="genWave">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <span id="genBtnText">開始生成音樂</span>
+      </button>
+
+      <div class="status-bar hidden" id="genStatus">
+        <div class="spinner"></div>
+        <span id="genStatusMsg">正在生成...</span>
+      </div>
+      <div class="error-bar hidden" id="genError"></div>
+
+      <div class="result-card hidden" id="genResult">
+        <div class="result-label"><div class="pulse-dot"></div>生成完成</div>
+        <audio id="audioPlayer" controls></audio>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- .layout -->
+
+<script>
+  // ── 生成器狀態 ─────────────────────────────
+  let selectedEmotion = "happy and excited";
+
+  function selectEmotion(btn) {
+    document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedEmotion = btn.dataset.value;
+    updatePreview();
+  }
+
+  function updatePreview() {
+    const style = document.getElementById('styleInput').value.trim();
+    const final = selectedEmotion ? selectedEmotion + ' ' + style : style;
+    document.getElementById('promptText').textContent = final || '(空白)';
+  }
+
+async function generateMusic() {
+    const style = document.getElementById('styleInput').value.trim();
+    const duration = parseInt(document.getElementById('durationSlider').value);
+    const finalPrompt = selectedEmotion ? selectedEmotion + ' ' + style : style;
+    const useAudioPrompt = document.getElementById('useAudioPrompt').checked;
+
+    if (!finalPrompt.trim()) { showError('genError', '請輸入曲風或選擇情緒'); return; }
+
+    setGenerating(true);
+    hide('genError'); hide('genResult');
+
+    try {
+      let res;
+      
+      // 判斷是否勾選了 Music-to-Music 且左側有音檔
+      if (useAudioPrompt) {
+        if (!uploadedFile && !recordedBlob) {
+          throw new Error('請先在左側上傳或錄製音訊');
+        }
+        
+        // 準備 FormData (包含文字與檔案)
+        const form = new FormData();
+        form.append('prompt', finalPrompt);
+        form.append('duration', duration);
+        if (uploadedFile) {
+          form.append('file', uploadedFile);
+        } else {
+          form.append('file', new File([recordedBlob], 'webcam_recorded.wav', { type: 'audio/wav' }));
+        }
+
+        // 呼叫 Music-to-Music API
+        res = await fetch('http://127.0.0.1:8000/generate-music-to-music/', {
+          method: 'POST',
+          body: form
+        });
+      } else {
+        // 純文字生成 Text-to-Music (原本的邏輯)
+        res = await fetch('http://127.0.0.1:8000/generate-music/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: finalPrompt, duration })
+        });
+      }
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || '伺服器錯誤 (' + res.status + ')');
+      }
+      
+      document.getElementById('genStatusMsg').textContent = '載入音訊中...';
+      const blob = await res.blob();
+      document.getElementById('audioPlayer').src = URL.createObjectURL(blob);
+      show('genResult');
+    } catch (e) {
+      showError('genError', '❌ 生成失敗：' + e.message);
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  function setGenerating(on) {
+    const btn = document.getElementById('generateBtn');
+    const wave = document.getElementById('genWave');
+    const txt = document.getElementById('genBtnText');
+    const bar = document.getElementById('genStatus');
+    btn.disabled = on;
+    on ? show(wave) : hide(wave);
+    txt.textContent = on ? '生成中...' : '開始生成音樂';
+    on ? show(bar) : hide(bar);
+    document.getElementById('genStatusMsg').textContent = '正在傳送指令給 AI...';
+  }
+
+  // ── 情感分析 ──────────────────────────────
+  let uploadedFile = null;
+  let recordedBlob = null;
+  let mediaRecorder = null;
+  let mediaStream = null;
+  let recordChunks = [];
+  let recordTimerId = null;
+  let recordSeconds = 0;
+
+  function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) setUploadFile(file);
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById('uploadArea').classList.add('drag-over');
+  }
+  function handleDragLeave() {
+    document.getElementById('uploadArea').classList.remove('drag-over');
+  }
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('uploadArea').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) setUploadFile(file);
+  }
+
+  function setUploadFile(file) {
+    uploadedFile = file;
+    recordedBlob = null;
+    hide('recordedCard');
+    const fn = document.getElementById('uploadFilename');
+    fn.textContent = file.name;
+    show(fn);
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+
+  async function startRecording() {
+    hide('analyzeError');
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('此瀏覽器不支援 getUserMedia');
+      }
+      if (typeof MediaRecorder === 'undefined') {
+        throw new Error('此瀏覽器不支援 MediaRecorder');
+      }
+
+      // 只啟用麥克風，避免相機權限或裝置造成錄音初始化失敗。
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      if (!mediaStream.getAudioTracks().length) {
+        throw new Error('未偵測到可用的麥克風音軌');
+      }
+      recordChunks = [];
+      recordedBlob = null;
+      uploadedFile = null;
+      hide('uploadFilename');
+
+      const mimeCandidates = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/mp4',
+        ''
+      ];
+
+      let preferredMime = '';
+      for (const candidate of mimeCandidates) {
+        if (!candidate || MediaRecorder.isTypeSupported(candidate)) {
+          preferredMime = candidate;
+          break;
+        }
+      }
+
+      mediaRecorder = preferredMime
+        ? new MediaRecorder(mediaStream, { mimeType: preferredMime })
+        : new MediaRecorder(mediaStream);
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) recordChunks.push(event.data);
+      };
+      mediaRecorder.onstop = async () => {
+        try {
+          const blobType = preferredMime || (recordChunks[0] && recordChunks[0].type) || 'audio/webm';
+          const blob = new Blob(recordChunks, { type: blobType });
+          recordedBlob = await convertBlobToWav(blob);
+          const url = URL.createObjectURL(recordedBlob);
+          document.getElementById('recordedPlayer').src = url;
+          show('recordedCard');
+          document.getElementById('analyzeBtn').disabled = false;
+        } catch (e) {
+          showError('analyzeError', '❌ 錄音轉檔失敗：' + e.message);
+        }
+      };
+
+      mediaRecorder.start();
+      setRecordingUI(true);
+    } catch (e) {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+      showError('analyzeError', '❌ 無法啟用 webcam 麥克風：' + e.message);
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    }
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(track => track.stop());
+      mediaStream = null;
+    }
+    setRecordingUI(false);
+  }
+
+  function setRecordingUI(on) {
+    document.getElementById('startRecordBtn').disabled = on;
+    document.getElementById('stopRecordBtn').disabled = !on;
+    on ? show('recordingChip') : hide('recordingChip');
+
+    if (on) {
+      recordSeconds = 0;
+      updateRecordingTimer();
+      recordTimerId = setInterval(() => {
+        recordSeconds += 1;
+        updateRecordingTimer();
+      }, 1000);
+    } else if (recordTimerId) {
+      clearInterval(recordTimerId);
+      recordTimerId = null;
+    }
+  }
+
+  function updateRecordingTimer() {
+    const m = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
+    const s = String(recordSeconds % 60).padStart(2, '0');
+    document.getElementById('recordingTimer').textContent = `錄音中 ${m}:${s}`;
+  }
+
+  async function convertBlobToWav(blob) {
+    const arrayBuffer = await blob.arrayBuffer();
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const decoded = await ctx.decodeAudioData(arrayBuffer);
+    const wavBlob = encodeAudioBufferToWav(decoded);
+    await ctx.close();
+    return wavBlob;
+  }
+
+  function encodeAudioBufferToWav(audioBuffer) {
+    const channels = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const samples = audioBuffer.length;
+    const bytesPerSample = 2;
+    const blockAlign = channels * bytesPerSample;
+    const buffer = new ArrayBuffer(44 + samples * blockAlign);
+    const view = new DataView(buffer);
+
+    writeAscii(view, 0, 'RIFF');
+    view.setUint32(4, 36 + samples * blockAlign, true);
+    writeAscii(view, 8, 'WAVE');
+    writeAscii(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, channels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * blockAlign, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, 16, true);
+    writeAscii(view, 36, 'data');
+    view.setUint32(40, samples * blockAlign, true);
+
+    const channelData = [];
+    for (let c = 0; c < channels; c += 1) channelData.push(audioBuffer.getChannelData(c));
+
+    let offset = 44;
+    for (let i = 0; i < samples; i += 1) {
+      for (let c = 0; c < channels; c += 1) {
+        const sample = Math.max(-1, Math.min(1, channelData[c][i]));
+        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+        offset += 2;
+      }
+    }
+
+    return new Blob([buffer], { type: 'audio/wav' });
+  }
+
+  function writeAscii(view, offset, text) {
+    for (let i = 0; i < text.length; i += 1) {
+      view.setUint8(offset + i, text.charCodeAt(i));
+    }
+  }
+
+  const EMOTION_STYLES = {
+    'Happy':      { color: '#c8f04f', bg: 'rgba(200,240,79,0.1)', border: 'rgba(200,240,79,0.3)' },
+    'Tensional':  { color: '#e24b4a', bg: 'rgba(226,75,74,0.1)',  border: 'rgba(226,75,74,0.3)' },
+    'Sad':        { color: '#85b7eb', bg: 'rgba(133,183,235,0.1)', border: 'rgba(133,183,235,0.3)' },
+    'Peaceful':   { color: '#5dcaa5', bg: 'rgba(93,202,165,0.1)',  border: 'rgba(93,202,165,0.3)' },
+  };
+
+  async function analyzeEmotion() {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      stopRecording();
+    }
+    if (!uploadedFile && !recordedBlob) {
+      showError('analyzeError', '請先上傳音檔或先錄音');
+      return;
+    }
+    hide('analyzeError'); hide('analyzeResult');
+    setAnalyzing(true);
+
+    try {
+      const form = new FormData();
+      if (uploadedFile) {
+        form.append('file', uploadedFile);
+      } else {
+        form.append('file', new File([recordedBlob], 'webcam_recorded.wav', { type: 'audio/wav' }));
+      }
+      const res = await fetch('http://127.0.0.1:8000/analyze-emotion/', { method: 'POST', body: form });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || '伺服器錯誤 (' + res.status + ')');
+      }
+      const data = await res.json();
+      renderEmotionResult(data);
+      show('analyzeResult');
+    } catch (e) {
+      showError('analyzeError', '❌ 分析失敗：' + e.message);
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
+  function setAnalyzing(on) {
+    document.getElementById('analyzeBtn').disabled = on;
+    document.getElementById('analyzeBtnText').textContent = on ? '分析中...' : '分析情感';
+    on ? show('analyzeStatus') : hide('analyzeStatus');
+  }
+
+  function renderEmotionResult(data) {
+    // 情緒標籤
+    const style = EMOTION_STYLES[data.emotion] || EMOTION_STYLES['Happy'];
+    const badge = document.getElementById('emotionBadge');
+    badge.textContent = data.emotion + '  ' + data.emotion_zh;
+    badge.style.cssText = `color:${style.color}; background:${style.bg}; border:1px solid ${style.border}`;
+
+    // VA 數值
+    const v = data.valence, a = data.arousal;
+   
+    document.getElementById('valenceVal').textContent = v.toFixed(2);
+    document.getElementById('arousalVal').textContent = a.toFixed(2);
+    // 轉成 0~100% (v/a 範圍約 -1 ~ 1)
+    document.getElementById('valenceBar').style.width = Math.round((v + 1) / 2 * 100) + '%';
+    document.getElementById('arousalBar').style.width = Math.round((a + 1) / 2 * 100) + '%';
+
+    // 四象限點 (valence: -1~1 → 0~200, arousal: -1~1 → 200~0 上正下負)
+    const cx = Math.round((v + 1)/100 * 200);
+    const cy = Math.round((1 - (a + 1) / 100) * 200);
+    const dot = document.getElementById('quadrantDot');
+    const outer = document.getElementById('quadrantDotOuter');
+    dot.setAttribute('cx', cx); dot.setAttribute('cy', cy); dot.setAttribute('opacity', '1');
+    outer.setAttribute('cx', cx); outer.setAttribute('cy', cy); outer.setAttribute('opacity', '1');
+    dot.style.fill = style.color;
+    outer.style.fill = style.color.replace(')', ',0.25)').replace('rgb', 'rgba');
+
+    // 標籤
+    const wrap = document.getElementById('tagsWrap');
+    wrap.innerHTML = '';
+    const TAG_MAP_KEYS = ['house','dance','pop','heavy metal','punk','hardcore','ambient','mellow','chillout','classical','acoustic','jazz','blues','folk','soul','funk','electronic','techno','trance','rock','indie'];
+    data.top_tags.forEach(t => {
+      const pill = document.createElement('div');
+      pill.className = 'tag-pill' + (TAG_MAP_KEYS.includes(t.tag) ? ' highlight' : '');
+      pill.textContent = t.tag + ' ' + (t.score * 100).toFixed(0) + '%';
+      wrap.appendChild(pill);
+    });
+  }
+
+  // ── 工具函式 ──────────────────────────────
+  function show(el) { (typeof el === 'string' ? document.getElementById(el) : el).classList.remove('hidden'); }
+  function hide(el) { (typeof el === 'string' ? document.getElementById(el) : el).classList.add('hidden'); }
+  function showError(id, msg) { const el = document.getElementById(id); el.textContent = msg; show(el); }
+</script>
+</body>
+</html>
