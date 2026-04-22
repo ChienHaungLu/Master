@@ -4,6 +4,6 @@
 ![Fig1][Fig/Model.png]
 
 實驗結果如下:  
-![acc][Fig/acc.png]  
+![acc](Fig/acc.png)  
 
-![loss][Fig/loss.png]
+![loss](Fig/loss.png)
