@@ -60,6 +60,8 @@ Arbitrary Style Transfer in Real-time with Adaptive Instance Normalization. Xun 
 
 ![table2](Fig/Result2.png)
 
+<br>
+
 ## GUI And Demo
 ![Results1](Fig/1.jpg)
 ![Results2](Fig/2.jpg)
