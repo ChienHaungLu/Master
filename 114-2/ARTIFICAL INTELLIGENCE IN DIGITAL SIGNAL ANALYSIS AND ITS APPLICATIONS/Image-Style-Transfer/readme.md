@@ -16,9 +16,8 @@
 ![pipeline](Fig/pipeline-design.png)
 
 **Source:** 呂建篁
+
 <br>
-
-
 
 ## Model Architecture
 
