@@ -18,7 +18,7 @@
 **Source:** 呂建篁
 <br>
 
----
+
 
 ## Model Architecture
 
@@ -40,11 +40,11 @@ Arbitrary Style Transfer in Real-time with Adaptive Instance Normalization. Xun 
 - 考量裝置在運算資源有限
 - 不追求精度
 
----
+
 **Calibration Data:**  
 同上面Style Dataset及Scene Dataset,只選用20張作為校正使用，目的在於讓模型各層 activation 在「真實資料」下數值分布
 
----
+
 **Xaiver端:**
 - 在Xaiver上進行PTQ量化(從模型FP32至TensorRT INT8)
 
